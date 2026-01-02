@@ -2,7 +2,9 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import joblib
+import base64
 import warnings
+
 warnings.filterwarnings("ignore", category=UserWarning)
 warnings.filterwarnings("ignore", category=FutureWarning)
 
@@ -60,8 +62,6 @@ def top_nav():
     """, unsafe_allow_html=True)
 
 # ---------------- LOGIN ----------------
-import streamlit as st
-
 def login():
     if "logged_in" not in st.session_state:
         st.session_state.logged_in = False
@@ -79,8 +79,6 @@ def login():
         else:
             st.error("Invalid username or password")
 
-
-
 # ---------------- HOME ----------------
 def home_page():
     st.markdown("""
@@ -96,31 +94,15 @@ def home_page():
     c1, c2, c3 = st.columns(3)
 
     with c1:
-        st.markdown("""
-        <div style='background:rgba(255,255,255,0.1);padding:25px;border-radius:15px;color:white;text-align:center;'>
-        <h3>⚡ Prediction</h3>
-        ML-based alert classification
-        </div>
-        """, unsafe_allow_html=True)
+        st.info("⚡ **Prediction**\n\nML-based alert classification")
 
     with c2:
-        st.markdown("""
-        <div style='background:rgba(255,255,255,0.1);padding:25px;border-radius:15px;color:white;text-align:center;'>
-        <h3>📊 Visualization</h3>
-        Impact-based charts
-        </div>
-        """, unsafe_allow_html=True)
+        st.info("📊 **Visualization**\n\nImpact-based charts")
 
     with c3:
-        st.markdown("""
-        <div style='background:rgba(255,255,255,0.1);padding:25px;border-radius:15px;color:white;text-align:center;'>
-        <h3>🌍 Awareness</h3>
-        Risk communication
-        </div>
-        """, unsafe_allow_html=True)
+        st.info("🌍 **Awareness**\n\nRisk communication")
 
 # ---------------- MANUAL PREDICTION ----------------
-
 def manual_page():
     st.markdown("<h2 style='color:white;'>Manual Prediction</h2>", unsafe_allow_html=True)
 
@@ -136,11 +118,18 @@ def manual_page():
         sig = st.number_input("Significance", 0.0, 1000.0, 200.0)
 
     if st.button("Predict Alert"):
+        # Derived features (MUST match training)
         intensity_score = magnitude * cdi
         magnitude_depth_ratio = magnitude / (depth + 1e-5)
+
         feature_names = model.feature_names_in_
-        X = pd.DataFrame([[magnitude, depth, cdi, mmi, sig, intensity_score, magnitude_depth_ratio]],
-                         columns=feature_names)
+
+        X = pd.DataFrame(
+            [[magnitude, depth, cdi, mmi, sig,
+              intensity_score, magnitude_depth_ratio]],
+            columns=feature_names
+        )
+
         pred = model.predict(X)[0]
 
         alert_map = {
@@ -161,30 +150,31 @@ def manual_page():
 
         st.markdown(f"""
         <div style='margin-top:20px;padding:30px;border-radius:15px;
-        background:{color_map[label]};color:black;text-align:center;font-size:30px;font-weight:700;'>
+        background:{color_map[label]};
+        color:black;
+        text-align:center;
+        font-size:30px;
+        font-weight:700;'>
         {label} ALERT
         </div>
         """, unsafe_allow_html=True)
 
-        # Bar chart
         chart_data = {
-         "Feature": ["Magnitude","Depth","CDI","MMI","SIG"],
-        "Value": [magnitude, depth, cdi, mmi, sig]
+            "Feature": ["Magnitude", "Depth", "CDI", "MMI", "SIG"],
+            "Value": [magnitude, depth, cdi, mmi, sig]
         }
 
-        st.bar_chart(
-            data=pd.DataFrame(chart_data).set_index("Feature")
-        )
+        st.bar_chart(pd.DataFrame(chart_data).set_index("Feature"))
 
-       
 # ---------------- UPLOAD PAGE ----------------
 def upload_page():
     st.markdown("<h2 style='color:white;'>Upload Dataset</h2>", unsafe_allow_html=True)
+
     file = st.file_uploader("Upload CSV", type=["csv"])
 
     if file:
         df = pd.read_csv(file)
-        st.dataframe(df.head())
+        st.dataframe(df)
 
 # ---------------- MAIN ----------------
 try:
@@ -199,15 +189,18 @@ except:
     """, unsafe_allow_html=True)
 
 top_nav()
+
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 
 if not st.session_state.logged_in:
     login()
 else:
-
-    page = st.radio("Navigate", ["Home", "Manual Prediction", "Upload Data"],
-                    horizontal=True)
+    page = st.radio(
+        "Navigate",
+        ["Home", "Manual Prediction", "Upload Data"],
+        horizontal=True
+    )
 
     if page == "Home":
         home_page()
@@ -215,5 +208,3 @@ else:
         manual_page()
     else:
         upload_page()
-
-
