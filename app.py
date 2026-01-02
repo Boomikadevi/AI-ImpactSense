@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 import joblib
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
@@ -168,11 +167,16 @@ def manual_page():
         """, unsafe_allow_html=True)
 
         # Bar chart
-        fig, ax = plt.subplots()
-        ax.bar(["Magnitude","Depth","CDI","MMI","SIG"],
-               [magnitude, depth, cdi, mmi, sig])
-        st.pyplot(fig)
-        
+        chart_data = {
+         "Feature": ["Magnitude","Depth","CDI","MMI","SIG"],
+        "Value": [magnitude, depth, cdi, mmi, sig]
+        }
+
+st.bar_chart(
+    data=pd.DataFrame(chart_data).set_index("Feature")
+)
+
+       
 # ---------------- UPLOAD PAGE ----------------
 def upload_page():
     st.markdown("<h2 style='color:white;'>Upload Dataset</h2>", unsafe_allow_html=True)
@@ -211,3 +215,4 @@ else:
         manual_page()
     else:
         upload_page()
+
