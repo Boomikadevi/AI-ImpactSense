@@ -172,9 +172,9 @@ def manual_page():
         "Value": [magnitude, depth, cdi, mmi, sig]
         }
 
-st.bar_chart(
-    data=pd.DataFrame(chart_data).set_index("Feature")
-)
+        st.bar_chart(
+            data=pd.DataFrame(chart_data).set_index("Feature")
+        )
 
        
 # ---------------- UPLOAD PAGE ----------------
@@ -215,4 +215,5 @@ else:
         manual_page()
     else:
         upload_page()
+
 
